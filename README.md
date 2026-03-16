@@ -179,3 +179,111 @@ MediTrace AI aims to simplify healthcare data management by allowing patients an
 
 • Shivangi – AI Backend & Intelligence Layer
 • Team Members – Frontend & Core Infrastructure
+
+# 📂 Project Structure
+
+```
+MediTrace-AI
+│
+├── backend
+│   ├── controllers
+│   │   ├── analyzeController.js
+│   │   ├── healthController.js
+│   │   ├── timelineController.js
+│   │   └── emergencyController.js
+│   │
+│   ├── routes
+│   │   ├── analyzeRoutes.js
+│   │   ├── healthRoutes.js
+│   │   ├── timelineRoutes.js
+│   │   └── emergencyRoutes.js
+│   │
+│   ├── uploads
+│   │
+│   ├── server.js
+│   └── package.json
+│
+├── frontend
+│
+├── ai-module
+│
+└── README.md
+```
+
+---
+
+# ⚙️ Installation & Setup
+
+### 1️⃣ Clone the repository
+
+```
+git clone https://github.com/Shivangi-121/MediTrace-AI--Health-Intelligence-System.git
+```
+
+---
+
+### 2️⃣ Navigate to backend
+
+```
+cd MediTrace-AI--Health-Intelligence-System/backend
+```
+
+---
+
+### 3️⃣ Install dependencies
+
+```
+npm install
+```
+
+---
+
+### 4️⃣ Start the backend server
+
+```
+node server.js
+```
+
+Server will run on:
+
+```
+http://localhost:5000
+```
+
+---
+
+# 🧪 Testing APIs
+
+Use **Postman** to test endpoints.
+
+Example request:
+
+```
+POST http://localhost:5000/api/analyze-report
+```
+
+Body → form-data
+
+```
+Key: report
+Type: File
+```
+
+Upload a medical report PDF to analyze.
+
+---
+
+# 🌟 Future Improvements
+
+• Integration with MongoDB database
+• Advanced AI health prediction models
+• OCR-based medical report reading
+• Real-time health monitoring dashboard
+
+---
+
+# 💡 Vision
+
+MediTrace AI aims to become an intelligent healthcare assistant that simplifies medical data analysis, enabling faster diagnosis support and better health tracking.
+
+
