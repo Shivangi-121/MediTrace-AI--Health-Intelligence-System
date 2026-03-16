@@ -286,4 +286,55 @@ Upload a medical report PDF to analyze.
 
 MediTrace AI aims to become an intelligent healthcare assistant that simplifies medical data analysis, enabling faster diagnosis support and better health tracking.
 
+# 🏗 System Architecture
+
+MediTrace AI follows a modular architecture where the frontend interacts with backend APIs, which process medical reports using AI logic.
+
+```
+ id="sysarch1"
+          ┌─────────────────────┐
+          │     React Frontend  │
+          │  (User Interface)   │
+          └──────────┬──────────┘
+                     │
+                     │ API Requests
+                     ▼
+          ┌─────────────────────┐
+          │   Node.js Backend   │
+          │   Express Server    │
+          └──────────┬──────────┘
+                     │
+        ┌────────────┼─────────────┐
+        ▼            ▼             ▼
+ ┌────────────┐ ┌────────────┐ ┌──────────────┐
+ │ AI Analysis│ │ Health APIs│ │ Emergency API│
+ │ (Reports)  │ │ Insights   │ │ Critical Data│
+ └────────────┘ └────────────┘ └──────────────┘
+                     │
+                     ▼
+          ┌─────────────────────┐
+          │   Medical Insights  │
+          │ Risk Score + Alerts │
+          └─────────────────────┘
+```
+
+---
+
+# 🔄 System Workflow
+
+```
+ id="sysflow1"
+User uploads medical report
+          ↓
+Backend extracts report text
+          ↓
+AI analyzes medical data
+          ↓
+Health risk score generated
+          ↓
+Insights + recommendations returned
+          ↓
+Displayed on user dashboard
+```
+
 
