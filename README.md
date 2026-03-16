@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # MediTrace AI – Health Intelligence System
 
 MediTrace AI is an AI-powered healthcare intelligence platform that helps users analyze medical reports, detect potential health risks, and access critical medical information quickly.
