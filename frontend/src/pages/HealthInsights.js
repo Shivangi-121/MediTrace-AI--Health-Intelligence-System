@@ -1,13 +1,26 @@
 import React, { useState } from "react";
-import { Box, Typography, Chip, Paper, Grid, Card, CardContent, Divider, Button } from "@mui/material";
+import {
+  Box,
+  Button,
+  Card,
+  CardContent,
+  Chip,
+  Divider,
+  Grid,
+  Paper,
+  Typography,
+  useMediaQuery,
+} from "@mui/material";
+import { useTheme } from "@mui/material/styles";
 import { motion } from "framer-motion";
 import AnimatedCard from "../components/AnimatedCard";
-import { Info, Warning, CheckCircle, Assignment, Science, LocalHospital, Person } from "@mui/icons-material";
+import { Info, Warning, CheckCircle, Assignment, Science, LocalHospital } from "@mui/icons-material";
 
 const HealthInsights = ({ aiData }) => {
-  console.log("HealthInsights: Received aiData:", aiData);
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [showPatientSummary, setShowPatientSummary] = useState(false);
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
   const insights = aiData.insights && aiData.insights.length
     ? aiData.insights.map((insight, index) => ({
@@ -15,9 +28,7 @@ const HealthInsights = ({ aiData }) => {
         category: index % 3 === 0 ? "risk" : index % 3 === 1 ? "positive" : "info",
         priority: index % 2 === 0 ? "high" : "normal",
       }))
-    : [
-        { text: "Upload a report to see insights", category: "info", priority: "normal" },
-      ];
+    : [{ text: "Upload a report to see insights", category: "info", priority: "normal" }];
 
   const categories = [
     { key: "all", label: "All Insights", color: "primary" },
@@ -26,36 +37,52 @@ const HealthInsights = ({ aiData }) => {
     { key: "info", label: "General Info", color: "info" },
   ];
 
-  const filteredInsights = selectedCategory === "all"
-    ? insights
-    : insights.filter(insight => insight.category === selectedCategory);
+  const filteredInsights =
+    selectedCategory === "all"
+      ? insights
+      : insights.filter((insight) => insight.category === selectedCategory);
 
   const getIcon = (category) => {
     switch (category) {
-      case "risk": return <Warning />;
-      case "positive": return <CheckCircle />;
-      default: return <Info />;
+      case "risk":
+        return <Warning />;
+      case "positive":
+        return <CheckCircle />;
+      default:
+        return <Info />;
     }
   };
 
   const getGradient = (category) => {
     switch (category) {
-      case "risk": return "linear-gradient(135deg, #f44336, #ff7961)";
-      case "positive": return "linear-gradient(135deg, #4caf50, #81c784)";
-      default: return "linear-gradient(135deg, #2196f3, #64b5f6)";
+      case "risk":
+        return "linear-gradient(135deg, #f44336, #ff7961)";
+      case "positive":
+        return "linear-gradient(135deg, #4caf50, #81c784)";
+      default:
+        return "linear-gradient(135deg, #2196f3, #64b5f6)";
     }
   };
 
   return (
-    <Box sx={{ p: 4, background: "#f0f2f5", minHeight: "100vh" }}>
+    <Box sx={{ p: { xs: 2, sm: 3, md: 4 }, background: "#f0f2f5", minHeight: "100vh" }}>
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
       >
-        <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3 }}>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: { xs: "flex-start", sm: "center" },
+            flexDirection: { xs: "column", sm: "row" },
+            gap: 2,
+            mb: 3,
+          }}
+        >
           <Typography
-            variant="h4"
+            variant={isMobile ? "h5" : "h4"}
             sx={{
               fontWeight: "bold",
               textShadow: "1px 1px #ccc",
@@ -72,7 +99,7 @@ const HealthInsights = ({ aiData }) => {
               variant="contained"
               startIcon={<Assignment />}
               onClick={() => setShowPatientSummary(!showPatientSummary)}
-              sx={{ borderRadius: 3 }}
+              sx={{ borderRadius: 3, width: { xs: "100%", sm: "auto" } }}
             >
               {showPatientSummary ? "Hide" : "Show"} Doctor Summary
             </Button>
@@ -80,30 +107,38 @@ const HealthInsights = ({ aiData }) => {
         </Box>
       </motion.div>
 
-      {/* Health Score Display */}
       {aiData.healthScore !== undefined && (
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.2, duration: 0.6 }}
         >
-          <Paper sx={{ p: 3, mb: 3, borderRadius: 3, textAlign: "center", background: "linear-gradient(135deg, #667eea, #764ba2)" }}>
-            <Typography variant="h3" sx={{ fontWeight: "bold", color: "white", mb: 1 }}>
+          <Paper
+            sx={{
+              p: { xs: 2.5, sm: 3 },
+              mb: 3,
+              borderRadius: 3,
+              textAlign: "center",
+              background: "linear-gradient(135deg, #667eea, #764ba2)",
+            }}
+          >
+            <Typography variant={isMobile ? "h4" : "h3"} sx={{ fontWeight: "bold", color: "white", mb: 1 }}>
               {aiData.healthScore}/100
             </Typography>
             <Typography variant="h6" sx={{ color: "white" }}>
               Health Score
             </Typography>
             <Typography variant="body2" sx={{ color: "rgba(255,255,255,0.8)", mt: 1 }}>
-              {aiData.healthScore >= 80 ? "Excellent health status" :
-               aiData.healthScore >= 60 ? "Good health with some monitoring needed" :
-               "Requires medical attention and lifestyle changes"}
+              {aiData.healthScore >= 80
+                ? "Excellent health status"
+                : aiData.healthScore >= 60
+                  ? "Good health with some monitoring needed"
+                  : "Requires medical attention and lifestyle changes"}
             </Typography>
           </Paper>
         </motion.div>
       )}
 
-      {/* Doctor-Friendly Patient Summary */}
       {showPatientSummary && aiData.patientSummary && (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -111,18 +146,21 @@ const HealthInsights = ({ aiData }) => {
           transition={{ delay: 0.3, duration: 0.6 }}
         >
           <Card sx={{ mb: 3, borderRadius: 3, boxShadow: 3 }}>
-            <CardContent sx={{ p: 3 }}>
+            <CardContent sx={{ p: { xs: 2.5, sm: 3 } }}>
               <Typography variant="h6" sx={{ mb: 2, fontWeight: "bold", color: "#1976d2" }}>
-                👨‍⚕️ Doctor-Friendly Patient Summary
+                Doctor-Friendly Patient Summary
               </Typography>
-              <Box sx={{
-                backgroundColor: "#f8f9fa",
-                p: 2,
-                borderRadius: 2,
-                fontFamily: "monospace",
-                whiteSpace: "pre-line",
-                border: "1px solid #e0e0e0"
-              }}>
+              <Box
+                sx={{
+                  backgroundColor: "#f8f9fa",
+                  p: 2,
+                  borderRadius: 2,
+                  fontFamily: "monospace",
+                  whiteSpace: "pre-line",
+                  border: "1px solid #e0e0e0",
+                  overflowX: "auto",
+                }}
+              >
                 {aiData.patientSummary}
               </Box>
             </CardContent>
@@ -130,7 +168,6 @@ const HealthInsights = ({ aiData }) => {
         </motion.div>
       )}
 
-      {/* Extracted Medical Data */}
       {aiData.extractedData && (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -138,9 +175,9 @@ const HealthInsights = ({ aiData }) => {
           transition={{ delay: 0.4, duration: 0.6 }}
         >
           <Grid container spacing={3} sx={{ mb: 3 }}>
-            <Grid item xs={12} md={6}>
+            <Grid size={{ xs: 12, md: 6 }}>
               <Card sx={{ borderRadius: 3, boxShadow: 2 }}>
-                <CardContent sx={{ p: 3 }}>
+                <CardContent sx={{ p: { xs: 2.5, sm: 3 } }}>
                   <Typography variant="h6" sx={{ mb: 2, fontWeight: "bold", display: "flex", alignItems: "center" }}>
                     <Science sx={{ mr: 1, color: "#2196f3" }} />
                     Extracted Lab Results
@@ -160,9 +197,9 @@ const HealthInsights = ({ aiData }) => {
               </Card>
             </Grid>
 
-            <Grid item xs={12} md={6}>
+            <Grid size={{ xs: 12, md: 6 }}>
               <Card sx={{ borderRadius: 3, boxShadow: 2 }}>
-                <CardContent sx={{ p: 3 }}>
+                <CardContent sx={{ p: { xs: 2.5, sm: 3 } }}>
                   <Typography variant="h6" sx={{ mb: 2, fontWeight: "bold", display: "flex", alignItems: "center" }}>
                     <LocalHospital sx={{ mr: 1, color: "#4caf50" }} />
                     Report Details
@@ -222,7 +259,6 @@ const HealthInsights = ({ aiData }) => {
         </motion.div>
       )}
 
-      {/* Risk Detection */}
       {aiData.risksDetected && aiData.risksDetected.length > 0 && (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -230,20 +266,17 @@ const HealthInsights = ({ aiData }) => {
           transition={{ delay: 0.5, duration: 0.6 }}
         >
           <Card sx={{ mb: 3, borderRadius: 3, boxShadow: 2 }}>
-            <CardContent sx={{ p: 3 }}>
-              <Typography variant="h6" sx={{ mb: 2, fontWeight: "bold", color: "#f44336", display: "flex", alignItems: "center" }}>
+            <CardContent sx={{ p: { xs: 2.5, sm: 3 } }}>
+              <Typography
+                variant="h6"
+                sx={{ mb: 2, fontWeight: "bold", color: "#f44336", display: "flex", alignItems: "center" }}
+              >
                 <Warning sx={{ mr: 1 }} />
                 AI Risk Detection
               </Typography>
               <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
                 {aiData.risksDetected.map((risk, index) => (
-                  <Chip
-                    key={index}
-                    label={risk}
-                    color="error"
-                    variant="filled"
-                    sx={{ fontWeight: "bold" }}
-                  />
+                  <Chip key={index} label={risk} color="error" variant="filled" sx={{ fontWeight: "bold" }} />
                 ))}
               </Box>
             </CardContent>
@@ -256,17 +289,13 @@ const HealthInsights = ({ aiData }) => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.6, duration: 0.6 }}
       >
-        <Paper sx={{ p: 2, mb: 3, borderRadius: 3 }}>
+        <Paper sx={{ p: { xs: 2, sm: 2.5 }, mb: 3, borderRadius: 3 }}>
           <Typography variant="h6" sx={{ mb: 2 }}>
             Filter Insights by Category
           </Typography>
           <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
             {categories.map((cat) => (
-              <motion.div
-                key={cat.key}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
+              <motion.div key={cat.key} whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
                 <Chip
                   label={cat.label}
                   color={selectedCategory === cat.key ? cat.color : "default"}
@@ -282,7 +311,7 @@ const HealthInsights = ({ aiData }) => {
 
       <Grid container spacing={2}>
         {filteredInsights.map((insight, i) => (
-          <Grid item xs={12} md={6} key={i}>
+          <Grid size={{ xs: 12, md: 6 }} key={`${insight.text}-${i}`}>
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -299,11 +328,7 @@ const HealthInsights = ({ aiData }) => {
       </Grid>
 
       {filteredInsights.length === 0 && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.5 }}
-        >
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }}>
           <Paper sx={{ p: 4, textAlign: "center", borderRadius: 3 }}>
             <Typography variant="h6" color="text.secondary">
               No insights found for the selected category

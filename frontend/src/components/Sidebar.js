@@ -1,15 +1,14 @@
-// src/components/Sidebar.js
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
+  Avatar,
   Box,
+  Button,
+  Divider,
   List,
-  ListItem,
+  ListItemButton,
   ListItemIcon,
   ListItemText,
   Typography,
-  Avatar,
-  Divider,
-  Button
 } from "@mui/material";
 import { motion } from "framer-motion";
 import DashboardIcon from "@mui/icons-material/Dashboard";
@@ -28,48 +27,53 @@ const menuItems = [
   { text: "Emergency Profile", icon: <EmergencyIcon />, color: "#f44336" },
 ];
 
-const Sidebar = ({ onSelect }) => {
-  const [selectedItem, setSelectedItem] = useState("Dashboard");
+const Sidebar = ({ onSelect, currentPage = "Dashboard", onClose, compact = false }) => {
+  const [selectedItem, setSelectedItem] = useState(currentPage);
   const [user, setUser] = useState(null);
 
   useEffect(() => {
-    // Load user data from localStorage
-    const userData = localStorage.getItem('user');
+    const userData = localStorage.getItem("user");
     if (userData) {
       setUser(JSON.parse(userData));
     }
   }, []);
 
+  useEffect(() => {
+    setSelectedItem(currentPage);
+  }, [currentPage]);
+
   const handleSelect = (item) => {
     setSelectedItem(item);
     onSelect(item);
+    if (onClose) {
+      onClose();
+    }
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('user');
-    window.location.reload(); // Refresh to go back to login
+    localStorage.removeItem("user");
+    window.location.reload();
   };
 
   return (
     <Box
       sx={{
-        width: 280,
-        height: "100vh",
+        width: compact ? "100%" : 280,
+        minHeight: "100%",
         background: "linear-gradient(180deg, #1e1e2f 0%, #2a2a3e 100%)",
         color: "#fff",
         display: "flex",
         flexDirection: "column",
-        pt: 3,
-        pb: 3,
+        pt: compact ? 2.5 : 3,
+        pb: compact ? 2 : 3,
         boxShadow: "2px 0 10px rgba(0,0,0,0.1)",
       }}
     >
-      {/* User Profile Section */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
-        style={{ padding: "0 16px", marginBottom: 16 }}
+        style={{ padding: "0 16px", marginBottom: compact ? 12 : 16 }}
       >
         <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
           <Avatar
@@ -77,16 +81,23 @@ const Sidebar = ({ onSelect }) => {
               width: 50,
               height: 50,
               bgcolor: "primary.main",
-              mr: 2
+              mr: 2,
             }}
           >
             <PersonIcon />
           </Avatar>
-          <Box>
+          <Box sx={{ minWidth: 0 }}>
             <Typography variant="subtitle1" sx={{ fontWeight: "bold", lineHeight: 1.2 }}>
               {user?.name || "User"}
             </Typography>
-            <Typography variant="body2" sx={{ color: "rgba(255,255,255,0.7)", fontSize: "0.8rem" }}>
+            <Typography
+              variant="body2"
+              sx={{
+                color: "rgba(255,255,255,0.7)",
+                fontSize: "0.8rem",
+                wordBreak: "break-word",
+              }}
+            >
               {user?.email || ""}
             </Typography>
           </Box>
@@ -103,7 +114,7 @@ const Sidebar = ({ onSelect }) => {
           variant="h5"
           sx={{
             textAlign: "center",
-            mb: 4,
+            mb: compact ? 3 : 4,
             fontWeight: "bold",
             background: "linear-gradient(45deg, #667eea, #764ba2)",
             WebkitBackgroundClip: "text",
@@ -117,13 +128,12 @@ const Sidebar = ({ onSelect }) => {
       <List sx={{ px: 2, flex: 1 }}>
         {menuItems.map((item, index) => (
           <motion.div
-            key={index}
+            key={item.text}
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: index * 0.1 + 0.3, duration: 0.5 }}
           >
-            <ListItem
-              button
+            <ListItemButton
               onClick={() => handleSelect(item.text)}
               sx={{
                 mb: 1,
@@ -166,12 +176,11 @@ const Sidebar = ({ onSelect }) => {
                   },
                 }}
               />
-            </ListItem>
+            </ListItemButton>
           </motion.div>
         ))}
       </List>
 
-      {/* Logout Button */}
       <Box sx={{ px: 2, mt: "auto" }}>
         <motion.div
           initial={{ opacity: 0, y: 20 }}

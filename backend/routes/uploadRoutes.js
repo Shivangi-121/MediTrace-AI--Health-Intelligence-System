@@ -59,18 +59,23 @@ router.post("/upload-report", (req, res, next) => {
   upload.single("report")(req, res, (err) => {
     if (err) {
       console.error("Multer error:", err);
-      return res.status(400).json({ error: err.message });
+      return res.status(400).json({ 
+        error: err.message || "File upload failed",
+        message: err.message || "File upload failed"
+      });
     }
     next();
   });
 }, async (req, res) => {
   console.log("Upload request received");
   console.log("File:", req.file);
-  console.log("Body:", req.body);
 
   if (!req.file) {
     console.log("No file uploaded");
-    return res.status(400).json({ error: "No file uploaded" });
+    return res.status(400).json({ 
+      error: "No file uploaded",
+      message: "Please provide a file to upload"
+    });
   }
 
   try {
@@ -111,7 +116,7 @@ router.post("/upload-report", (req, res, next) => {
     console.error("Processing error:", err);
     res.status(500).json({
       error: "Failed to process medical report",
-      details: err.message
+      message: err.message || "An unexpected error occurred"
     });
   }
 });

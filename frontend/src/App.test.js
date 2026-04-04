@@ -1,8 +1,11 @@
-import { render, screen } from '@testing-library/react';
-import App from './App';
+import { render, screen } from "@testing-library/react";
 
-test('renders learn react link', () => {
+jest.mock("./components/ReportUpload", () => () => <div>Mock Upload Screen</div>);
+
+import App from "./App";
+
+test("renders MediTrace AI login screen", () => {
   render(<App />);
-  const linkElement = screen.getByText(/learn react/i);
-  expect(linkElement).toBeInTheDocument();
+  expect(screen.getByText(/MediTrace AI/i)).toBeInTheDocument();
+  expect(screen.getByText(/Secure Patient Health Account/i)).toBeInTheDocument();
 });

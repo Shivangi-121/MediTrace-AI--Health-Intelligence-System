@@ -1,16 +1,18 @@
-// src/pages/Timeline.js
 import React, { useState } from "react";
 import {
   Box,
-  Typography,
-  Paper,
-  Grid,
-  Chip,
-  Card,
   CardContent,
-  Tabs,
+  Chip,
+  Dialog,
+  DialogContent,
+  Grid,
+  Paper,
   Tab,
+  Tabs,
+  Typography,
+  useMediaQuery,
 } from "@mui/material";
+import { useTheme } from "@mui/material/styles";
 import { motion } from "framer-motion";
 import {
   LineChart,
@@ -27,15 +29,8 @@ import {
   Pie,
   Cell,
 } from "recharts";
-import {
-  TrendingUp,
-  Favorite,
-  LocalHospital,
-  Assessment,
-  ShowChart,
-} from "@mui/icons-material";
+import { TrendingUp, Favorite, LocalHospital, Assessment, ShowChart } from "@mui/icons-material";
 
-// Sample health data for demonstration
 const healthData = [
   { date: "2023-01", bloodPressure: 120, heartRate: 72, cholesterol: 180, weight: 75 },
   { date: "2023-03", bloodPressure: 118, heartRate: 70, cholesterol: 175, weight: 74 },
@@ -103,11 +98,12 @@ const riskData = [
   { name: "High Risk", value: 10, color: "#f44336" },
 ];
 
-const Timeline = ({ events, aiData }) => {
+const Timeline = ({ aiData }) => {
   const [activeTab, setActiveTab] = useState(0);
   const [selectedEvent, setSelectedEvent] = useState(null);
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
-  // Extract health metrics from aiData
   const extractHealthData = () => {
     if (!aiData?.extractedData || !aiData.extractedData.labResults) {
       return healthData;
@@ -115,29 +111,24 @@ const Timeline = ({ events, aiData }) => {
 
     const extracted = aiData.extractedData;
     const labs = extracted.labResults;
-    
-    // Parse lab values
     const parseValue = (str) => {
-      if (typeof str !== 'string') return 0;
+      if (typeof str !== "string") return 0;
       const match = str.match(/(\d+)/);
-      return match ? parseInt(match[1]) : 0;
+      return match ? parseInt(match[1], 10) : 0;
     };
 
-    // Create health trend data from extracted lab results
     return [
       {
-        date: extracted.reportDate || new Date().toISOString().split('T')[0],
-        bloodPressure: parseValue(labs['Systolic BP'] || labs['systolic_bp'] || '120'),
-        heartRate: parseValue(labs['Heart Rate'] || labs['heart_rate'] || '70'),
-        cholesterol: parseValue(labs['Total Cholesterol'] || labs['Cholesterol'] || '180'),
-        weight: 70, // Default value if not in labs
+        date: extracted.reportDate || new Date().toISOString().split("T")[0],
+        bloodPressure: parseValue(labs["Systolic BP"] || labs.systolic_bp || "120"),
+        heartRate: parseValue(labs["Heart Rate"] || labs.heart_rate || "70"),
+        cholesterol: parseValue(labs["Total Cholesterol"] || labs.Cholesterol || "180"),
+        weight: 70,
       },
-      // Add historical data for context
       ...healthData,
     ];
   };
 
-  // Generate risk assessment data from detected risks
   const generateRiskData = () => {
     if (!aiData?.risksDetected || aiData.risksDetected.length === 0) {
       return riskData;
@@ -155,7 +146,6 @@ const Timeline = ({ events, aiData }) => {
     ];
   };
 
-  // Generate vital signs summary
   const getVitalSignsSummary = () => {
     if (!aiData?.extractedData || !aiData.extractedData.labResults) {
       return null;
@@ -163,10 +153,10 @@ const Timeline = ({ events, aiData }) => {
 
     const labs = aiData.extractedData.labResults;
     return {
-      bloodPressure: labs['Systolic BP'] || labs['systolic_bp'] || 'N/A',
-      heartRate: labs['Heart Rate'] || labs['heart_rate'] || 'N/A',
-      cholesterol: labs['Total Cholesterol'] || labs['Cholesterol'] || 'N/A',
-      weight: labs['Weight'] || labs['weight'] || 'N/A',
+      bloodPressure: labs["Systolic BP"] || labs.systolic_bp || "N/A",
+      heartRate: labs["Heart Rate"] || labs.heart_rate || "N/A",
+      cholesterol: labs["Total Cholesterol"] || labs.Cholesterol || "N/A",
+      weight: labs.Weight || labs.weight || "N/A",
     };
   };
 
@@ -174,30 +164,37 @@ const Timeline = ({ events, aiData }) => {
   const riskAssessmentData = generateRiskData();
   const vitalSigns = getVitalSignsSummary();
 
-  // Use AI-generated timeline or fallback to default events
   const medicalEvents = aiData?.medicalTimeline?.length
-    ? aiData.medicalTimeline.map((event, index) => {
-        const [year, eventText] = event.split(' → ');
-        return {
-          id: index + 1,
-          date: `${year}-01-01`, // Default date for the year
-          title: eventText || 'Medical Event',
-          description: `Health event recorded in ${year}`,
-          type: eventText.toLowerCase().includes('test') ? 'lab' :
-                eventText.toLowerCase().includes('diagnosis') ? 'diagnosis' :
-                eventText.toLowerCase().includes('check') ? 'checkup' : 'event',
-          icon: <Assessment />,
-          color: eventText.toLowerCase().includes('diabetes') ? '#f44336' :
-                 eventText.toLowerCase().includes('blood') ? '#2196f3' :
-                 eventText.toLowerCase().includes('cholesterol') ? '#ff9800' : '#4caf50',
-          year: year
-        };
-      }).sort((a, b) => b.year - a.year) // Sort by year descending
-    : timelineEvents;
+    ? aiData.medicalTimeline
+        .map((event, index) => {
+          const [year, eventText] = event.split("->").map((part) => part.trim());
+          const safeText = eventText || "Medical Event";
 
-  const handleTabChange = (event, newValue) => {
-    setActiveTab(newValue);
-  };
+          return {
+            id: index + 1,
+            date: `${year}-01-01`,
+            title: safeText,
+            description: `Health event recorded in ${year}`,
+            type: safeText.toLowerCase().includes("test")
+              ? "lab"
+              : safeText.toLowerCase().includes("diagnosis")
+                ? "diagnosis"
+                : safeText.toLowerCase().includes("check")
+                  ? "checkup"
+                  : "event",
+            icon: <Assessment />,
+            color: safeText.toLowerCase().includes("diabetes")
+              ? "#f44336"
+              : safeText.toLowerCase().includes("blood")
+                ? "#2196f3"
+                : safeText.toLowerCase().includes("cholesterol")
+                  ? "#ff9800"
+                  : "#4caf50",
+            year,
+          };
+        })
+        .sort((a, b) => Number(b.year) - Number(a.year))
+    : timelineEvents;
 
   const chartVariants = {
     hidden: { opacity: 0, y: 20 },
@@ -205,18 +202,18 @@ const Timeline = ({ events, aiData }) => {
   };
 
   return (
-    <Box sx={{ p: 4, background: "#f0f2f5", minHeight: "100vh" }}>
+    <Box sx={{ p: { xs: 2, sm: 3, md: 4 }, background: "#f0f2f5", minHeight: "100vh" }}>
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
       >
         <Typography
-          variant="h4"
+          variant={isMobile ? "h5" : "h4"}
           sx={{
             mb: 3,
             fontWeight: "bold",
-            textAlign: "center",
+            textAlign: { xs: "left", sm: "center" },
             background: "linear-gradient(45deg, #667eea, #764ba2)",
             WebkitBackgroundClip: "text",
             WebkitTextFillColor: "transparent",
@@ -227,14 +224,9 @@ const Timeline = ({ events, aiData }) => {
       </motion.div>
 
       <Grid container spacing={3}>
-        {/* Timeline Section */}
-        <Grid item xs={12} md={4}>
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.3, duration: 0.6 }}
-          >
-            <Paper sx={{ p: 3, borderRadius: 3, height: "100%" }}>
+        <Grid size={{ xs: 12, md: 4 }}>
+          <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3, duration: 0.6 }}>
+            <Paper sx={{ p: { xs: 2.5, sm: 3 }, borderRadius: 3, height: "100%" }}>
               <Typography variant="h6" sx={{ mb: 3, fontWeight: "bold" }}>
                 Health Events Timeline
               </Typography>
@@ -246,7 +238,7 @@ const Timeline = ({ events, aiData }) => {
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: index * 0.1, duration: 0.5 }}
-                    whileHover={{ scale: 1.02 }}
+                    whileHover={{ scale: 1.01 }}
                     onClick={() => setSelectedEvent(event)}
                   >
                     <Box
@@ -272,9 +264,10 @@ const Timeline = ({ events, aiData }) => {
                           mr: 2,
                           mt: 0.5,
                           boxShadow: `0 0 0 3px ${event.color}20`,
+                          flexShrink: 0,
                         }}
                       />
-                      <Box sx={{ flex: 1 }}>
+                      <Box sx={{ flex: 1, minWidth: 0 }}>
                         <Typography variant="subtitle2" sx={{ fontWeight: "bold", color: event.color }}>
                           {event.title}
                         </Typography>
@@ -285,15 +278,7 @@ const Timeline = ({ events, aiData }) => {
                       </Box>
                     </Box>
                     {index < medicalEvents.length - 1 && (
-                      <Box
-                        sx={{
-                          width: 2,
-                          height: 30,
-                          backgroundColor: "#e0e0e0",
-                          ml: 0.5,
-                          mb: 1,
-                        }}
-                      />
+                      <Box sx={{ width: 2, height: 30, backgroundColor: "#e0e0e0", ml: 0.5, mb: 1 }} />
                     )}
                   </motion.div>
                 ))}
@@ -302,17 +287,14 @@ const Timeline = ({ events, aiData }) => {
           </motion.div>
         </Grid>
 
-        {/* Charts Section */}
-        <Grid item xs={12} md={8}>
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.5, duration: 0.6 }}
-          >
-            <Paper sx={{ p: 3, borderRadius: 3 }}>
+        <Grid size={{ xs: 12, md: 8 }}>
+          <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.5, duration: 0.6 }}>
+            <Paper sx={{ p: { xs: 2.5, sm: 3 }, borderRadius: 3 }}>
               <Tabs
                 value={activeTab}
-                onChange={handleTabChange}
+                onChange={(event, newValue) => setActiveTab(newValue)}
+                variant={isMobile ? "scrollable" : "standard"}
+                allowScrollButtonsMobile
                 sx={{
                   mb: 3,
                   "& .MuiTab-root": {
@@ -327,18 +309,14 @@ const Timeline = ({ events, aiData }) => {
                 <Tab label="Risk Analysis" />
               </Tabs>
 
-              <Box sx={{ height: 400 }}>
+              <Box sx={{ height: activeTab === 2 ? { xs: 520, sm: 400 } : 400 }}>
                 {activeTab === 0 && (
-                  <motion.div
-                    variants={chartVariants}
-                    initial="hidden"
-                    animate="visible"
-                  >
-                    <Box>
+                  <motion.div variants={chartVariants} initial="hidden" animate="visible">
+                    <Box sx={{ height: "100%" }}>
                       <Typography variant="body2" sx={{ mb: 2, color: "#666" }}>
-                        {aiData?.extractedData?.reportDate 
+                        {aiData?.extractedData?.reportDate
                           ? `Latest report: ${aiData.extractedData.reportDate}`
-                          : 'No report uploaded yet - Showing sample data'}
+                          : "No report uploaded yet - Showing sample data"}
                       </Typography>
                       <ResponsiveContainer width="100%" height="100%">
                         <AreaChart data={chartData}>
@@ -347,24 +325,8 @@ const Timeline = ({ events, aiData }) => {
                           <YAxis />
                           <Tooltip />
                           <Legend />
-                          <Area
-                            type="monotone"
-                            dataKey="cholesterol"
-                            stackId="1"
-                            stroke="#8884d8"
-                            fill="#8884d8"
-                            fillOpacity={0.6}
-                            name="Cholesterol (mg/dL)"
-                          />
-                          <Area
-                            type="monotone"
-                            dataKey="bloodPressure"
-                            stackId="1"
-                            stroke="#82ca9d"
-                            fill="#82ca9d"
-                            fillOpacity={0.6}
-                            name="Blood Pressure (mmHg)"
-                          />
+                          <Area type="monotone" dataKey="cholesterol" stackId="1" stroke="#8884d8" fill="#8884d8" fillOpacity={0.6} name="Cholesterol (mg/dL)" />
+                          <Area type="monotone" dataKey="bloodPressure" stackId="1" stroke="#82ca9d" fill="#82ca9d" fillOpacity={0.6} name="Blood Pressure (mmHg)" />
                         </AreaChart>
                       </ResponsiveContainer>
                     </Box>
@@ -372,46 +334,29 @@ const Timeline = ({ events, aiData }) => {
                 )}
 
                 {activeTab === 1 && (
-                  <motion.div
-                    variants={chartVariants}
-                    initial="hidden"
-                    animate="visible"
-                  >
-                    <Box>
+                  <motion.div variants={chartVariants} initial="hidden" animate="visible">
+                    <Box sx={{ height: "100%" }}>
                       {vitalSigns && (
-                        <Box sx={{ 
-                          mb: 3, 
-                          p: 2, 
-                          backgroundColor: "rgba(102, 126, 234, 0.08)",
-                          borderRadius: 2
-                        }}>
+                        <Box sx={{ mb: 3, p: 2, backgroundColor: "rgba(102, 126, 234, 0.08)", borderRadius: 2 }}>
                           <Typography variant="subtitle2" sx={{ fontWeight: "bold", mb: 1 }}>
                             Latest Vital Signs:
                           </Typography>
                           <Grid container spacing={2}>
-                            <Grid item xs={6} sm={3}>
+                            <Grid size={{ xs: 6, sm: 3 }}>
                               <Typography variant="body2" color="text.secondary">Blood Pressure</Typography>
-                              <Typography variant="subtitle2" sx={{ fontWeight: "bold", color: "#2196f3" }}>
-                                {vitalSigns.bloodPressure}
-                              </Typography>
+                              <Typography variant="subtitle2" sx={{ fontWeight: "bold", color: "#2196f3" }}>{vitalSigns.bloodPressure}</Typography>
                             </Grid>
-                            <Grid item xs={6} sm={3}>
+                            <Grid size={{ xs: 6, sm: 3 }}>
                               <Typography variant="body2" color="text.secondary">Heart Rate</Typography>
-                              <Typography variant="subtitle2" sx={{ fontWeight: "bold", color: "#ff7300" }}>
-                                {vitalSigns.heartRate}
-                              </Typography>
+                              <Typography variant="subtitle2" sx={{ fontWeight: "bold", color: "#ff7300" }}>{vitalSigns.heartRate}</Typography>
                             </Grid>
-                            <Grid item xs={6} sm={3}>
+                            <Grid size={{ xs: 6, sm: 3 }}>
                               <Typography variant="body2" color="text.secondary">Cholesterol</Typography>
-                              <Typography variant="subtitle2" sx={{ fontWeight: "bold", color: "#8884d8" }}>
-                                {vitalSigns.cholesterol}
-                              </Typography>
+                              <Typography variant="subtitle2" sx={{ fontWeight: "bold", color: "#8884d8" }}>{vitalSigns.cholesterol}</Typography>
                             </Grid>
-                            <Grid item xs={6} sm={3}>
+                            <Grid size={{ xs: 6, sm: 3 }}>
                               <Typography variant="body2" color="text.secondary">Weight</Typography>
-                              <Typography variant="subtitle2" sx={{ fontWeight: "bold", color: "#387908" }}>
-                                {vitalSigns.weight}
-                              </Typography>
+                              <Typography variant="subtitle2" sx={{ fontWeight: "bold", color: "#387908" }}>{vitalSigns.weight}</Typography>
                             </Grid>
                           </Grid>
                         </Box>
@@ -423,24 +368,8 @@ const Timeline = ({ events, aiData }) => {
                           <YAxis />
                           <Tooltip />
                           <Legend />
-                          <Line
-                            type="monotone"
-                            dataKey="heartRate"
-                            stroke="#ff7300"
-                            strokeWidth={3}
-                            dot={{ fill: "#ff7300", strokeWidth: 2, r: 6 }}
-                            activeDot={{ r: 8 }}
-                            name="Heart Rate (bpm)"
-                          />
-                          <Line
-                            type="monotone"
-                            dataKey="weight"
-                            stroke="#387908"
-                            strokeWidth={3}
-                            dot={{ fill: "#387908", strokeWidth: 2, r: 6 }}
-                            activeDot={{ r: 8 }}
-                            name="Weight (kg)"
-                          />
+                          <Line type="monotone" dataKey="heartRate" stroke="#ff7300" strokeWidth={3} dot={{ fill: "#ff7300", strokeWidth: 2, r: 6 }} activeDot={{ r: 8 }} name="Heart Rate (bpm)" />
+                          <Line type="monotone" dataKey="weight" stroke="#387908" strokeWidth={3} dot={{ fill: "#387908", strokeWidth: 2, r: 6 }} activeDot={{ r: 8 }} name="Weight (kg)" />
                         </LineChart>
                       </ResponsiveContainer>
                     </Box>
@@ -448,13 +377,18 @@ const Timeline = ({ events, aiData }) => {
                 )}
 
                 {activeTab === 2 && (
-                  <motion.div
-                    variants={chartVariants}
-                    initial="hidden"
-                    animate="visible"
-                  >
-                    <Box sx={{ display: "flex", justifyContent: "space-around", alignItems: "center", height: "100%" }}>
-                      <Box sx={{ width: 300, height: 300 }}>
+                  <motion.div variants={chartVariants} initial="hidden" animate="visible">
+                    <Box
+                      sx={{
+                        display: "flex",
+                        justifyContent: "space-around",
+                        alignItems: "center",
+                        flexDirection: { xs: "column", sm: "row" },
+                        gap: 3,
+                        height: "100%",
+                      }}
+                    >
+                      <Box sx={{ width: { xs: "100%", sm: 300 }, maxWidth: 300, height: 300 }}>
                         <ResponsiveContainer width="100%" height="100%">
                           <PieChart>
                             <Pie
@@ -476,21 +410,13 @@ const Timeline = ({ events, aiData }) => {
                         </ResponsiveContainer>
                       </Box>
 
-                      <Box sx={{ ml: 4 }}>
+                      <Box sx={{ ml: { xs: 0, sm: 4 }, width: { xs: "100%", sm: "auto" } }}>
                         <Typography variant="h6" sx={{ mb: 2, fontWeight: "bold" }}>
                           Risk Assessment
                         </Typography>
                         {riskAssessmentData.map((risk, index) => (
                           <Box key={index} sx={{ display: "flex", alignItems: "center", mb: 1 }}>
-                            <Box
-                              sx={{
-                                width: 16,
-                                height: 16,
-                                borderRadius: "50%",
-                                backgroundColor: risk.color,
-                                mr: 2,
-                              }}
-                            />
+                            <Box sx={{ width: 16, height: 16, borderRadius: "50%", backgroundColor: risk.color, mr: 2 }} />
                             <Typography variant="body2">
                               {risk.name}: {risk.value.toFixed(0)}%
                             </Typography>
@@ -503,7 +429,7 @@ const Timeline = ({ events, aiData }) => {
                             </Typography>
                             {aiData.risksDetected.map((risk, index) => (
                               <Typography key={index} variant="body2" sx={{ color: "#f44336", mb: 0.5 }}>
-                                • {risk}
+                                - {risk}
                               </Typography>
                             ))}
                           </Box>
@@ -518,25 +444,12 @@ const Timeline = ({ events, aiData }) => {
         </Grid>
       </Grid>
 
-      {/* Event Details Modal/Card */}
-      {selectedEvent && (
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0, scale: 0.9 }}
-          transition={{ duration: 0.3 }}
-          style={{
-            position: "fixed",
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%, -50%)",
-            zIndex: 1000,
-          }}
-        >
-          <Card sx={{ minWidth: 400, maxWidth: 500 }}>
-            <CardContent sx={{ p: 3 }}>
+      <Dialog open={Boolean(selectedEvent)} onClose={() => setSelectedEvent(null)} fullWidth maxWidth="sm">
+        {selectedEvent && (
+          <DialogContent sx={{ p: { xs: 2.5, sm: 3 } }}>
+            <CardContent sx={{ p: 0 }}>
               <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-                <Box sx={{ color: selectedEvent.color, mr: 2, fontSize: 24 }}>
+                <Box sx={{ color: selectedEvent.color, mr: 2, fontSize: 24, display: "flex" }}>
                   {selectedEvent.icon}
                 </Box>
                 <Typography variant="h6" sx={{ fontWeight: "bold" }}>
@@ -548,35 +461,12 @@ const Timeline = ({ events, aiData }) => {
               </Typography>
               <Typography variant="body1">{selectedEvent.description}</Typography>
               <Box sx={{ mt: 3, display: "flex", justifyContent: "flex-end" }}>
-                <Chip
-                  label={selectedEvent.type}
-                  sx={{
-                    backgroundColor: selectedEvent.color,
-                    color: "white",
-                    textTransform: "capitalize",
-                  }}
-                />
+                <Chip label={selectedEvent.type} sx={{ backgroundColor: selectedEvent.color, color: "white", textTransform: "capitalize" }} />
               </Box>
             </CardContent>
-          </Card>
-        </motion.div>
-      )}
-
-      {/* Overlay for modal */}
-      {selectedEvent && (
-        <Box
-          sx={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            width: "100%",
-            height: "100%",
-            backgroundColor: "rgba(0, 0, 0, 0.5)",
-            zIndex: 999,
-          }}
-          onClick={() => setSelectedEvent(null)}
-        />
-      )}
+          </DialogContent>
+        )}
+      </Dialog>
     </Box>
   );
 };

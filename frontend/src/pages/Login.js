@@ -1,22 +1,22 @@
-// src/pages/Login.js
 import React, { useState } from "react";
 import {
-  Box,
-  TextField,
-  Button,
-  Typography,
-  Paper,
-  Tabs,
-  Tab,
   Alert,
+  Box,
+  Button,
   FormControl,
   InputLabel,
+  MenuItem,
+  Paper,
   Select,
-  MenuItem
+  Tab,
+  Tabs,
+  TextField,
+  Typography,
+  useMediaQuery,
 } from "@mui/material";
+import { useTheme } from "@mui/material/styles";
 import { motion } from "framer-motion";
 import { FaHeartbeat } from "react-icons/fa";
-import { Person, Email, Lock, Phone, Cake } from "@mui/icons-material";
 
 const Login = ({ onLogin }) => {
   const [activeTab, setActiveTab] = useState(0);
@@ -30,10 +30,12 @@ const Login = ({ onLogin }) => {
     dateOfBirth: "",
     gender: "",
     emergencyContact: "",
-    bloodGroup: ""
+    bloodGroup: "",
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
   const handleTabChange = (event, newValue) => {
     setActiveTab(newValue);
@@ -49,15 +51,14 @@ const Login = ({ onLogin }) => {
     setIsLoading(true);
     setTimeout(() => {
       setIsLoading(false);
-      // In a real app, this would validate against a backend
-      localStorage.setItem('user', JSON.stringify({ email: loginData.email, name: "John Doe" }));
+      localStorage.setItem("user", JSON.stringify({ email: loginData.email, name: "John Doe" }));
       onLogin();
     }, 1500);
   };
 
   const handleSignup = () => {
-    const required = ['name', 'email', 'password', 'confirmPassword', 'phone'];
-    const missing = required.filter(field => !signupData[field]);
+    const required = ["name", "email", "password", "confirmPassword", "phone"];
+    const missing = required.filter((field) => !signupData[field]);
 
     if (missing.length > 0) {
       setError("Please fill in all required fields");
@@ -77,16 +78,18 @@ const Login = ({ onLogin }) => {
     setIsLoading(true);
     setTimeout(() => {
       setIsLoading(false);
-      // In a real app, this would create account in backend
-      localStorage.setItem('user', JSON.stringify({
-        name: signupData.name,
-        email: signupData.email,
-        phone: signupData.phone,
-        dateOfBirth: signupData.dateOfBirth,
-        gender: signupData.gender,
-        emergencyContact: signupData.emergencyContact,
-        bloodGroup: signupData.bloodGroup
-      }));
+      localStorage.setItem(
+        "user",
+        JSON.stringify({
+          name: signupData.name,
+          email: signupData.email,
+          phone: signupData.phone,
+          dateOfBirth: signupData.dateOfBirth,
+          gender: signupData.gender,
+          emergencyContact: signupData.emergencyContact,
+          bloodGroup: signupData.bloodGroup,
+        })
+      );
       onLogin();
     }, 2000);
   };
@@ -98,24 +101,28 @@ const Login = ({ onLogin }) => {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-        p: 2,
+        background:
+          "radial-gradient(circle at top, rgba(255,255,255,0.18), transparent 35%), linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+        p: { xs: 1.5, sm: 2 },
       }}
     >
       <motion.div
         initial={{ opacity: 0, y: -50 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8, type: "spring", stiffness: 100 }}
+        style={{ width: "100%", display: "flex", justifyContent: "center" }}
       >
         <Paper
           elevation={10}
           sx={{
             maxWidth: 500,
             width: "100%",
-            p: 4,
-            borderRadius: 4,
+            p: { xs: 2.25, sm: 4 },
+            borderRadius: { xs: 3, sm: 4 },
             background: "rgba(255, 255, 255, 0.95)",
             backdropFilter: "blur(10px)",
+            maxHeight: { xs: "calc(100vh - 24px)", sm: "none" },
+            overflowY: "auto",
           }}
         >
           <motion.div
@@ -124,8 +131,8 @@ const Login = ({ onLogin }) => {
             transition={{ delay: 0.3, duration: 0.5 }}
             style={{ textAlign: "center", marginBottom: 24 }}
           >
-            <FaHeartbeat size={50} color="#667eea" />
-            <Typography variant="h4" sx={{ mt: 2, fontWeight: "bold", color: "#333" }}>
+            <FaHeartbeat size={isMobile ? 42 : 50} color="#667eea" />
+            <Typography variant={isMobile ? "h5" : "h4"} sx={{ mt: 2, fontWeight: "bold", color: "#333" }}>
               MediTrace AI
             </Typography>
             <Typography variant="body2" color="text.secondary">
@@ -136,27 +143,23 @@ const Login = ({ onLogin }) => {
           <Tabs
             value={activeTab}
             onChange={handleTabChange}
+            variant="fullWidth"
             sx={{
               mb: 3,
               "& .MuiTab-root": {
                 textTransform: "none",
                 fontWeight: "bold",
-                minHeight: 48
-              }
+                minHeight: 48,
+              },
             }}
           >
             <Tab label="Login" />
             <Tab label="Sign Up" />
           </Tabs>
 
-          {error && (
-            <Alert severity="error" sx={{ mb: 2 }}>
-              {error}
-            </Alert>
-          )}
+          {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
 
           {activeTab === 0 && (
-            // Login Form
             <Box>
               <motion.div
                 initial={{ opacity: 0, x: -20 }}
@@ -168,7 +171,7 @@ const Login = ({ onLogin }) => {
                   label="Email"
                   type="email"
                   value={loginData.email}
-                  onChange={(e) => setLoginData({...loginData, email: e.target.value})}
+                  onChange={(e) => setLoginData({ ...loginData, email: e.target.value })}
                   sx={{ mb: 2 }}
                   variant="outlined"
                 />
@@ -184,7 +187,7 @@ const Login = ({ onLogin }) => {
                   label="Password"
                   type="password"
                   value={loginData.password}
-                  onChange={(e) => setLoginData({...loginData, password: e.target.value})}
+                  onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
                   sx={{ mb: 3 }}
                   variant="outlined"
                 />
@@ -202,7 +205,7 @@ const Login = ({ onLogin }) => {
                   disabled={isLoading}
                   sx={{
                     py: 1.5,
-                    fontSize: "1.1rem",
+                    fontSize: "1.05rem",
                     background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
                     "&:hover": {
                       background: "linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%)",
@@ -217,8 +220,7 @@ const Login = ({ onLogin }) => {
           )}
 
           {activeTab === 1 && (
-            // Signup Form
-            <Box sx={{ maxHeight: 400, overflowY: "auto" }}>
+            <Box sx={{ maxHeight: { xs: "none", sm: 400 }, overflowY: "auto", pr: { sm: 0.5 } }}>
               <motion.div
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -228,7 +230,7 @@ const Login = ({ onLogin }) => {
                   fullWidth
                   label="Full Name"
                   value={signupData.name}
-                  onChange={(e) => setSignupData({...signupData, name: e.target.value})}
+                  onChange={(e) => setSignupData({ ...signupData, name: e.target.value })}
                   sx={{ mb: 2 }}
                   variant="outlined"
                   required
@@ -245,7 +247,7 @@ const Login = ({ onLogin }) => {
                   label="Email"
                   type="email"
                   value={signupData.email}
-                  onChange={(e) => setSignupData({...signupData, email: e.target.value})}
+                  onChange={(e) => setSignupData({ ...signupData, email: e.target.value })}
                   sx={{ mb: 2 }}
                   variant="outlined"
                   required
@@ -261,26 +263,25 @@ const Login = ({ onLogin }) => {
                   fullWidth
                   label="Phone Number"
                   value={signupData.phone}
-                  onChange={(e) => setSignupData({...signupData, phone: e.target.value})}
+                  onChange={(e) => setSignupData({ ...signupData, phone: e.target.value })}
                   sx={{ mb: 2 }}
                   variant="outlined"
                   required
                 />
               </motion.div>
 
-              <Box sx={{ display: "flex", gap: 1, mb: 2 }}>
+              <Box sx={{ display: "grid", gap: 1.5, gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" }, mb: 2 }}>
                 <motion.div
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.8, duration: 0.5 }}
-                  style={{ flex: 1 }}
                 >
                   <TextField
                     fullWidth
                     label="Date of Birth"
                     type="date"
                     value={signupData.dateOfBirth}
-                    onChange={(e) => setSignupData({...signupData, dateOfBirth: e.target.value})}
+                    onChange={(e) => setSignupData({ ...signupData, dateOfBirth: e.target.value })}
                     InputLabelProps={{ shrink: true }}
                     variant="outlined"
                   />
@@ -290,13 +291,12 @@ const Login = ({ onLogin }) => {
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.9, duration: 0.5 }}
-                  style={{ flex: 1 }}
                 >
                   <FormControl fullWidth variant="outlined">
                     <InputLabel>Gender</InputLabel>
                     <Select
                       value={signupData.gender}
-                      onChange={(e) => setSignupData({...signupData, gender: e.target.value})}
+                      onChange={(e) => setSignupData({ ...signupData, gender: e.target.value })}
                       label="Gender"
                     >
                       <MenuItem value="male">Male</MenuItem>
@@ -310,13 +310,13 @@ const Login = ({ onLogin }) => {
               <motion.div
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 1.0, duration: 0.5 }}
+                transition={{ delay: 1, duration: 0.5 }}
               >
                 <FormControl fullWidth variant="outlined" sx={{ mb: 2 }}>
                   <InputLabel>Blood Group</InputLabel>
                   <Select
                     value={signupData.bloodGroup}
-                    onChange={(e) => setSignupData({...signupData, bloodGroup: e.target.value})}
+                    onChange={(e) => setSignupData({ ...signupData, bloodGroup: e.target.value })}
                     label="Blood Group"
                   >
                     <MenuItem value="A+">A+</MenuItem>
@@ -340,7 +340,7 @@ const Login = ({ onLogin }) => {
                   fullWidth
                   label="Emergency Contact"
                   value={signupData.emergencyContact}
-                  onChange={(e) => setSignupData({...signupData, emergencyContact: e.target.value})}
+                  onChange={(e) => setSignupData({ ...signupData, emergencyContact: e.target.value })}
                   sx={{ mb: 2 }}
                   variant="outlined"
                   placeholder="Name and phone number"
@@ -357,7 +357,7 @@ const Login = ({ onLogin }) => {
                   label="Password"
                   type="password"
                   value={signupData.password}
-                  onChange={(e) => setSignupData({...signupData, password: e.target.value})}
+                  onChange={(e) => setSignupData({ ...signupData, password: e.target.value })}
                   sx={{ mb: 2 }}
                   variant="outlined"
                   required
@@ -374,7 +374,7 @@ const Login = ({ onLogin }) => {
                   label="Confirm Password"
                   type="password"
                   value={signupData.confirmPassword}
-                  onChange={(e) => setSignupData({...signupData, confirmPassword: e.target.value})}
+                  onChange={(e) => setSignupData({ ...signupData, confirmPassword: e.target.value })}
                   sx={{ mb: 3 }}
                   variant="outlined"
                   required
@@ -393,7 +393,7 @@ const Login = ({ onLogin }) => {
                   disabled={isLoading}
                   sx={{
                     py: 1.5,
-                    fontSize: "1.1rem",
+                    fontSize: "1.05rem",
                     background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
                     "&:hover": {
                       background: "linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%)",

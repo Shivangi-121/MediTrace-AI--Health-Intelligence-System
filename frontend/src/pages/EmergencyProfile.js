@@ -1,42 +1,31 @@
-// src/pages/EmergencyProfile.js
 import React, { useState } from "react";
 import {
   Box,
-  Typography,
-  Paper,
-  Grid,
+  Button,
   Card,
   CardContent,
-  Button,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  TextField,
   Chip,
-  Avatar,
-  Divider,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Grid,
+  Paper,
+  Typography,
+  useMediaQuery,
 } from "@mui/material";
+import { useTheme } from "@mui/material/styles";
 import { motion } from "framer-motion";
 import { QRCodeCanvas } from "qrcode.react";
-import {
-  LocalHospital,
-  Phone,
-  Warning,
-  Bloodtype,
-  Person,
-  QrCode,
-  Edit,
-  Download,
-  Share,
-} from "@mui/icons-material";
+import { LocalHospital, Phone, Warning, Bloodtype, Edit, Download, Share } from "@mui/icons-material";
 
-const EmergencyProfile = ({ aiData }) => {
+const EmergencyProfile = () => {
   const [showQRDialog, setShowQRDialog] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
-  // Emergency profile data
-  const [emergencyData, setEmergencyData] = useState({
+  const [emergencyData] = useState({
     name: "John Doe",
     bloodGroup: "B+",
     allergies: ["Penicillin", "Sulfa drugs"],
@@ -45,19 +34,19 @@ const EmergencyProfile = ({ aiData }) => {
       name: "Jane Doe",
       relationship: "Spouse",
       phone: "987XXXXXX",
-      email: "jane.doe@email.com"
+      email: "jane.doe@email.com",
     },
     medications: ["Albuterol inhaler", "Lisinopril 10mg"],
     doctorInfo: {
       primaryPhysician: "Dr. Sarah Johnson",
       hospital: "City General Hospital",
-      phone: "+1-555-0123"
+      phone: "+1-555-0123",
     },
     insurance: {
       provider: "HealthCare Plus",
       policyNumber: "HC123456789",
-      emergencyNumber: "1-800-HEALTH"
-    }
+      emergencyNumber: "1-800-HEALTH",
+    },
   });
 
   const qrData = JSON.stringify({
@@ -68,7 +57,7 @@ const EmergencyProfile = ({ aiData }) => {
     emergencyContact: emergencyData.emergencyContact,
     medications: emergencyData.medications.join(", "),
     doctorInfo: emergencyData.doctorInfo,
-    insurance: emergencyData.insurance
+    insurance: emergencyData.insurance,
   });
 
   const handleDownloadQR = () => {
@@ -85,7 +74,7 @@ const EmergencyProfile = ({ aiData }) => {
         await navigator.share({
           title: "Emergency Health Card",
           text: "My emergency health information",
-          url: window.location.href
+          url: window.location.href,
         });
       } catch (err) {
         console.log("Share failed:", err);
@@ -94,15 +83,20 @@ const EmergencyProfile = ({ aiData }) => {
   };
 
   return (
-    <Box sx={{ p: 4, background: "#f0f2f5", minHeight: "100vh" }}>
-      <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-      >
-        <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3 }}>
+    <Box sx={{ p: { xs: 2, sm: 3, md: 4 }, background: "#f0f2f5", minHeight: "100vh" }}>
+      <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: { xs: "flex-start", sm: "center" },
+            flexDirection: { xs: "column", sm: "row" },
+            gap: 2,
+            mb: 3,
+          }}
+        >
           <Typography
-            variant="h4"
+            variant={isMobile ? "h5" : "h4"}
             sx={{
               fontWeight: "bold",
               background: "linear-gradient(45deg, #667eea, #764ba2)",
@@ -116,7 +110,7 @@ const EmergencyProfile = ({ aiData }) => {
             variant="outlined"
             startIcon={<Edit />}
             onClick={() => setIsEditing(!isEditing)}
-            sx={{ borderRadius: 3 }}
+            sx={{ borderRadius: 3, width: { xs: "100%", sm: "auto" } }}
           >
             {isEditing ? "Save" : "Edit"}
           </Button>
@@ -124,21 +118,16 @@ const EmergencyProfile = ({ aiData }) => {
       </motion.div>
 
       <Grid container spacing={3}>
-        {/* Critical Information Card */}
-        <Grid item xs={12} md={8}>
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.2, duration: 0.6 }}
-          >
+        <Grid size={{ xs: 12, md: 8 }}>
+          <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2, duration: 0.6 }}>
             <Card sx={{ borderRadius: 3, boxShadow: 3 }}>
-              <CardContent sx={{ p: 3 }}>
+              <CardContent sx={{ p: { xs: 2.5, sm: 3 } }}>
                 <Typography variant="h6" sx={{ mb: 3, fontWeight: "bold", color: "#d32f2f" }}>
-                  🚨 Critical Information
+                  Critical Information
                 </Typography>
 
                 <Grid container spacing={2}>
-                  <Grid item xs={12} sm={6}>
+                  <Grid size={{ xs: 12, sm: 6 }}>
                     <Paper sx={{ p: 2, borderRadius: 2, background: "linear-gradient(135deg, #e3f2fd, #bbdefb)" }}>
                       <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
                         <Bloodtype sx={{ color: "#d32f2f", mr: 1 }} />
@@ -152,7 +141,7 @@ const EmergencyProfile = ({ aiData }) => {
                     </Paper>
                   </Grid>
 
-                  <Grid item xs={12} sm={6}>
+                  <Grid size={{ xs: 12, sm: 6 }}>
                     <Paper sx={{ p: 2, borderRadius: 2, background: "linear-gradient(135deg, #ffebee, #ffcdd2)" }}>
                       <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
                         <Warning sx={{ color: "#f57c00", mr: 1 }} />
@@ -162,18 +151,13 @@ const EmergencyProfile = ({ aiData }) => {
                       </Box>
                       <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
                         {emergencyData.allergies.map((allergy, index) => (
-                          <Chip
-                            key={index}
-                            label={allergy}
-                            size="small"
-                            sx={{ backgroundColor: "#ffebee", color: "#d32f2f" }}
-                          />
+                          <Chip key={index} label={allergy} size="small" sx={{ backgroundColor: "#ffebee", color: "#d32f2f" }} />
                         ))}
                       </Box>
                     </Paper>
                   </Grid>
 
-                  <Grid item xs={12} sm={6}>
+                  <Grid size={{ xs: 12, sm: 6 }}>
                     <Paper sx={{ p: 2, borderRadius: 2, background: "linear-gradient(135deg, #f3e5f5, #e1bee7)" }}>
                       <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
                         <LocalHospital sx={{ color: "#7b1fa2", mr: 1 }} />
@@ -183,18 +167,13 @@ const EmergencyProfile = ({ aiData }) => {
                       </Box>
                       <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
                         {emergencyData.chronicConditions.map((condition, index) => (
-                          <Chip
-                            key={index}
-                            label={condition}
-                            size="small"
-                            sx={{ backgroundColor: "#f3e5f5", color: "#7b1fa2" }}
-                          />
+                          <Chip key={index} label={condition} size="small" sx={{ backgroundColor: "#f3e5f5", color: "#7b1fa2" }} />
                         ))}
                       </Box>
                     </Paper>
                   </Grid>
 
-                  <Grid item xs={12} sm={6}>
+                  <Grid size={{ xs: 12, sm: 6 }}>
                     <Paper sx={{ p: 2, borderRadius: 2, background: "linear-gradient(135deg, #e8f5e8, #c8e6c9)" }}>
                       <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
                         <Phone sx={{ color: "#2e7d32", mr: 1 }} />
@@ -219,51 +198,31 @@ const EmergencyProfile = ({ aiData }) => {
           </motion.div>
         </Grid>
 
-        {/* QR Code Generator */}
-        <Grid item xs={12} md={4}>
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.4, duration: 0.6 }}
-          >
+        <Grid size={{ xs: 12, md: 4 }}>
+          <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.4, duration: 0.6 }}>
             <Card sx={{ borderRadius: 3, boxShadow: 3, textAlign: "center" }}>
-              <CardContent sx={{ p: 3 }}>
+              <CardContent sx={{ p: { xs: 2.5, sm: 3 } }}>
                 <Typography variant="h6" sx={{ mb: 2, fontWeight: "bold" }}>
-                  🆔 Emergency QR Card
+                  Emergency QR Card
                 </Typography>
 
                 <Box sx={{ mb: 2 }}>
-                  <QRCodeCanvas
-                    id="emergency-qr"
-                    value={qrData}
-                    size={200}
-                    level="H"
-                    includeMargin={true}
-                  />
+                  <QRCodeCanvas id="emergency-qr" value={qrData} size={isMobile ? 180 : 200} level="H" includeMargin />
                 </Box>
 
                 <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
                   Scan to view critical health information
                 </Typography>
 
-                <Box sx={{ display: "flex", gap: 1, justifyContent: "center" }}>
-                  <Button
-                    variant="contained"
-                    startIcon={<Download />}
-                    onClick={handleDownloadQR}
-                    size="small"
-                    sx={{ borderRadius: 2 }}
-                  >
+                <Box sx={{ display: "flex", gap: 1, justifyContent: "center", flexWrap: "wrap" }}>
+                  <Button variant="contained" startIcon={<Download />} onClick={handleDownloadQR} size="small" sx={{ borderRadius: 2 }}>
                     Download
                   </Button>
-                  <Button
-                    variant="outlined"
-                    startIcon={<Share />}
-                    onClick={handleShareQR}
-                    size="small"
-                    sx={{ borderRadius: 2 }}
-                  >
+                  <Button variant="outlined" startIcon={<Share />} onClick={handleShareQR} size="small" sx={{ borderRadius: 2 }}>
                     Share
+                  </Button>
+                  <Button variant="text" onClick={() => setShowQRDialog(true)} size="small">
+                    Expand
                   </Button>
                 </Box>
               </CardContent>
@@ -271,36 +230,27 @@ const EmergencyProfile = ({ aiData }) => {
           </motion.div>
         </Grid>
 
-        {/* Additional Information */}
-        <Grid item xs={12}>
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.6, duration: 0.6 }}
-          >
+        <Grid size={{ xs: 12 }}>
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6, duration: 0.6 }}>
             <Grid container spacing={3}>
-              <Grid item xs={12} md={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <Card sx={{ borderRadius: 3, boxShadow: 2 }}>
-                  <CardContent sx={{ p: 3 }}>
+                  <CardContent sx={{ p: { xs: 2.5, sm: 3 } }}>
                     <Typography variant="h6" sx={{ mb: 2, fontWeight: "bold" }}>
-                      💊 Current Medications
+                      Current Medications
                     </Typography>
                     {emergencyData.medications.map((med, index) => (
-                      <Chip
-                        key={index}
-                        label={med}
-                        sx={{ m: 0.5, backgroundColor: "#e3f2fd" }}
-                      />
+                      <Chip key={index} label={med} sx={{ m: 0.5, backgroundColor: "#e3f2fd" }} />
                     ))}
                   </CardContent>
                 </Card>
               </Grid>
 
-              <Grid item xs={12} md={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <Card sx={{ borderRadius: 3, boxShadow: 2 }}>
-                  <CardContent sx={{ p: 3 }}>
+                  <CardContent sx={{ p: { xs: 2.5, sm: 3 } }}>
                     <Typography variant="h6" sx={{ mb: 2, fontWeight: "bold" }}>
-                      👨‍⚕️ Healthcare Provider
+                      Healthcare Provider
                     </Typography>
                     <Typography variant="body2" sx={{ mb: 1 }}>
                       <strong>Primary Physician:</strong> {emergencyData.doctorInfo.primaryPhysician}
@@ -318,17 +268,12 @@ const EmergencyProfile = ({ aiData }) => {
           </motion.div>
         </Grid>
 
-        {/* Medical Timeline */}
-        <Grid item xs={12}>
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.8, duration: 0.6 }}
-          >
+        <Grid size={{ xs: 12 }}>
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.8, duration: 0.6 }}>
             <Card sx={{ borderRadius: 3, boxShadow: 3 }}>
-              <CardContent sx={{ p: 3 }}>
+              <CardContent sx={{ p: { xs: 2.5, sm: 3 } }}>
                 <Typography variant="h6" sx={{ mb: 3, fontWeight: "bold" }}>
-                  📅 Medical Timeline
+                  Medical Timeline
                 </Typography>
 
                 <Box sx={{ position: "relative" }}>
@@ -339,16 +284,13 @@ const EmergencyProfile = ({ aiData }) => {
                     { year: "2023", event: "Asthma management plan established", type: "treatment" },
                     { year: "2022", event: "Hypertension diagnosis", type: "diagnosis" },
                   ].map((item, index) => (
-                    <motion.div
-                      key={index}
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: index * 0.1, duration: 0.5 }}
-                    >
+                    <motion.div key={`${item.year}-${index}`} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: index * 0.1, duration: 0.5 }}>
                       <Box
                         sx={{
                           display: "flex",
-                          alignItems: "center",
+                          alignItems: { xs: "flex-start", sm: "center" },
+                          flexDirection: { xs: "column", sm: "row" },
+                          gap: { xs: 1, sm: 0 },
                           mb: 2,
                           p: 2,
                           borderRadius: 2,
@@ -360,29 +302,24 @@ const EmergencyProfile = ({ aiData }) => {
                             width: 12,
                             height: 12,
                             borderRadius: "50%",
-                            backgroundColor: item.type === "lab" ? "#2196f3" :
-                                           item.type === "diagnosis" ? "#f44336" :
-                                           item.type === "treatment" ? "#4caf50" : "#ff9800",
-                            mr: 2,
+                            backgroundColor:
+                              item.type === "lab"
+                                ? "#2196f3"
+                                : item.type === "diagnosis"
+                                  ? "#f44336"
+                                  : item.type === "treatment"
+                                    ? "#4caf50"
+                                    : "#ff9800",
+                            mr: { sm: 2 },
                             flexShrink: 0,
                           }}
                         />
-                        <Typography variant="body1" sx={{ fontWeight: "bold", mr: 2 }}>
-                          {item.year} →
+                        <Typography variant="body1" sx={{ fontWeight: "bold", mr: { sm: 2 } }}>
+                          {item.year}
                         </Typography>
                         <Typography variant="body1">{item.event}</Typography>
                       </Box>
-                      {index < 4 && (
-                        <Box
-                          sx={{
-                            width: 2,
-                            height: 20,
-                            backgroundColor: "#e0e0e0",
-                            ml: 0.5,
-                            mb: 1,
-                          }}
-                        />
-                      )}
+                      {index < 4 && <Box sx={{ width: 2, height: 20, backgroundColor: "#e0e0e0", ml: 0.5, mb: 1 }} />}
                     </motion.div>
                   ))}
                 </Box>
@@ -392,16 +329,10 @@ const EmergencyProfile = ({ aiData }) => {
         </Grid>
       </Grid>
 
-      {/* QR Code Dialog */}
-      <Dialog
-        open={showQRDialog}
-        onClose={() => setShowQRDialog(false)}
-        maxWidth="sm"
-        fullWidth
-      >
+      <Dialog open={showQRDialog} onClose={() => setShowQRDialog(false)} maxWidth="sm" fullWidth>
         <DialogTitle>Emergency QR Health Card</DialogTitle>
         <DialogContent sx={{ textAlign: "center", p: 3 }}>
-          <QRCodeCanvas value={qrData} size={300} level="H" />
+          <QRCodeCanvas value={qrData} size={isMobile ? 220 : 300} level="H" />
           <Typography variant="body2" sx={{ mt: 2, color: "text.secondary" }}>
             Scan this QR code in emergencies to access critical health information
           </Typography>

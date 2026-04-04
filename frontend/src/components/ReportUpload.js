@@ -1,6 +1,6 @@
-// src/components/ReportUpload.js
 import React, { useState } from "react";
-import { Box, Button, Typography, CircularProgress, Paper, LinearProgress, Chip } from "@mui/material";
+import { Box, Button, Chip, CircularProgress, Paper, Typography, useMediaQuery } from "@mui/material";
+import { useTheme } from "@mui/material/styles";
 import { motion } from "framer-motion";
 import { useDropzone } from "react-dropzone";
 import { FaCloudUploadAlt, FaFileMedical, FaCheck } from "react-icons/fa";
@@ -12,6 +12,8 @@ const ReportUpload = ({ onDataExtracted }) => {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isDragOver, setIsDragOver] = useState(false);
   const [uploadSuccess, setUploadSuccess] = useState(false);
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
   const { getRootProps, getInputProps } = useDropzone({
     onDrop: (acceptedFiles) => {
@@ -32,39 +34,34 @@ const ReportUpload = ({ onDataExtracted }) => {
     const formData = new FormData();
     formData.append("report", file);
 
-    console.log("Uploading file:", file.name, "Size:", file.size);
-
     try {
       const res = await axios.post("http://localhost:5000/api/upload-report", formData, {
         onUploadProgress: (progressEvent) => {
           const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
           setUploadProgress(percentCompleted);
-          console.log("Upload progress:", percentCompleted);
         },
       });
-      console.log("Upload successful:", res.data);
       setUploadProgress(100);
       setUploadSuccess(true);
       setTimeout(() => {
-        console.log("Calling onDataExtracted with:", res.data);
         onDataExtracted(res.data);
-      }, 1500); // Give more time to show success message
+        setLoading(false);
+        setFile(null);
+        setUploadSuccess(false);
+      }, 1500);
     } catch (err) {
-      console.error("Upload failed:", err);
-      alert(`Upload failed: ${err.response?.data || err.message}`);
+      const errorMessage = err.response?.data?.error || err.response?.data?.message || err.message || "Upload failed";
+      alert(`Upload failed: ${errorMessage}`);
       setLoading(false);
+      setUploadProgress(0);
     }
   };
 
   return (
-    <Box sx={{ maxWidth: 600, mx: "auto", mt: 5, p: 2 }}>
-      <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-      >
+    <Box sx={{ maxWidth: 600, mx: "auto", mt: { xs: 2, sm: 5 }, p: { xs: 2, sm: 2.5 } }}>
+      <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
         <Typography
-          variant="h4"
+          variant={isMobile ? "h5" : "h4"}
           sx={{
             textAlign: "center",
             mb: 4,
@@ -78,17 +75,13 @@ const ReportUpload = ({ onDataExtracted }) => {
         </Typography>
       </motion.div>
 
-      <motion.div
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ delay: 0.3, duration: 0.5 }}
-      >
+      <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.3, duration: 0.5 }}>
         <Paper
           {...getRootProps()}
           sx={{
-            border: `2px dashed ${isDragOver ? '#4caf50' : '#2196f3'}`,
+            border: `2px dashed ${isDragOver ? "#4caf50" : "#2196f3"}`,
             borderRadius: 4,
-            p: 6,
+            p: { xs: 3, sm: 6 },
             cursor: "pointer",
             background: isDragOver
               ? "linear-gradient(135deg, #e8f5e8, #f3e5f5)"
@@ -100,40 +93,38 @@ const ReportUpload = ({ onDataExtracted }) => {
             "&:hover": {
               borderColor: "#4caf50",
               background: "linear-gradient(135deg, #e8f5e8, #f3e5f5)",
-              transform: "scale(1.02)",
+              transform: "scale(1.01)",
             },
           }}
         >
           <input {...getInputProps()} />
-          <motion.div
-            animate={{ y: isDragOver ? -5 : 0 }}
-            transition={{ type: "spring", stiffness: 300 }}
-          >
-            <Box sx={{ fontSize: 60, color: isDragOver ? "#4caf50" : "#2196f3", mb: 2 }}>
+          <motion.div animate={{ y: isDragOver ? -5 : 0 }} transition={{ type: "spring", stiffness: 300 }}>
+            <Box sx={{ fontSize: { xs: 48, sm: 60 }, color: isDragOver ? "#4caf50" : "#2196f3", mb: 2 }}>
               <FaCloudUploadAlt />
             </Box>
-            <Typography variant="h6" sx={{ mb: 1, fontWeight: "bold" }}>
-              {file ? "File Selected!" : "Drag & Drop Your Report"}
+            <Typography variant="h6" sx={{ mb: 1, fontWeight: "bold", fontSize: { xs: "1.05rem", sm: "1.25rem" } }}>
+              {file ? "File Selected" : "Drag and Drop Your Report"}
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              {file ? "" : "Or click to browse files"}
+              {file ? "Tap upload to start AI processing." : "Or tap to browse files from your device"}
             </Typography>
           </motion.div>
 
           {file && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.3 }}
-            >
+            <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.3 }}>
               <Chip
                 icon={<FaFileMedical />}
                 label={file.name}
                 sx={{
                   mt: 2,
+                  maxWidth: "100%",
                   background: "linear-gradient(135deg, #2196f3, #64b5f6)",
                   color: "white",
                   "& .MuiChip-icon": { color: "white" },
+                  "& .MuiChip-label": {
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                  },
                 }}
               />
             </motion.div>
@@ -141,15 +132,17 @@ const ReportUpload = ({ onDataExtracted }) => {
         </Paper>
       </motion.div>
 
+      {loading && uploadProgress > 0 && (
+        <Typography variant="body2" sx={{ mt: 2, textAlign: "center", color: "text.secondary" }}>
+          Uploading: {uploadProgress}%
+        </Typography>
+      )}
+
       {uploadSuccess && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
-        >
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}>
           <Paper sx={{ p: 3, mt: 3, borderRadius: 3, backgroundColor: "#e8f5e8", border: "1px solid #4caf50" }}>
-            <Typography variant="h6" sx={{ color: "#2e7d32", textAlign: "center" }}>
-              ✅ Report uploaded successfully! Processing AI insights...
+            <Typography variant="h6" sx={{ color: "#2e7d32", textAlign: "center", fontSize: { xs: "1rem", sm: "1.25rem" } }}>
+              Report uploaded successfully. Processing AI insights...
             </Typography>
           </Paper>
         </motion.div>
@@ -165,10 +158,11 @@ const ReportUpload = ({ onDataExtracted }) => {
           variant="contained"
           onClick={handleUpload}
           disabled={!file || loading}
+          fullWidth={isMobile}
           sx={{
             px: 4,
             py: 1.5,
-            fontSize: "1.1rem",
+            fontSize: "1.05rem",
             borderRadius: 3,
             background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
             "&:hover": {
